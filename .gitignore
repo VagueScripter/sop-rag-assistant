@@ -1,0 +1,30 @@
+# Virtual Environment
+venv/
+.venv/
+
+# Environment variables
+.env
+
+# Local database
+chats.db
+*.db
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build artifacts
+faiss_index/
+
+# Data files (SOPs, etc.)
+data/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
