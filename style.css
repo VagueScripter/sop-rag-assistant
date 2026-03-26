@@ -1,0 +1,28 @@
+/* Target all buttons within the sidebar for a minimal, link-like appearance */
+[data-testid="stSidebar"] button {
+    background-color: transparent;
+    border: none;
+    color: #FFFFFF; /* White text, adjust for your theme if needed */
+    text-align: left;
+    display: block;
+    width: 100%;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.3rem;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+
+    /* --- FIX for single-line text --- */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- IMPROVED hover effect --- */
+[data-testid="stSidebar"] button:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Style for the active/focused button */
+[data-testid="stSidebar"] button:focus {
+    background-color: rgba(255, 255, 255, 0.25);
+    outline: none;
+}
