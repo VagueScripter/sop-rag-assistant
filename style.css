@@ -1,28 +1,152 @@
-/* Target all buttons within the sidebar for a minimal, link-like appearance */
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
 [data-testid="stSidebar"] button {
     background-color: transparent;
     border: none;
-    color: #FFFFFF; /* White text, adjust for your theme if needed */
+    color: #FFFFFF;
     text-align: left;
     display: block;
     width: 100%;
     padding: 0.25rem 0.5rem;
     border-radius: 0.3rem;
     transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-
-    /* --- FIX for single-line text --- */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
+[data-testid="stSidebar"] button:hover { background-color: rgba(255,255,255,0.12); }
+[data-testid="stSidebar"] button:focus { background-color: rgba(255,255,255,0.22); outline: none; }
 
-/* --- IMPROVED hover effect --- */
-[data-testid="stSidebar"] button:hover {
-    background-color: rgba(255, 255, 255, 0.15);
+/* Hide popover chevron arrow */
+[data-testid="stPopover"] button svg:last-child { display: none !important; }
+
+/* ============================================================
+   CHAT MESSAGE LAYOUT
+   ============================================================ */
+
+/* User messages — right aligned */
+div[data-testid="stChatMessage"]:has(.user-msg-marker) {
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    background: transparent;
+}
+div[data-testid="stChatMessage"]:has(.user-msg-marker) div[data-testid="stChatMessageAvatar"] {
+    display: none !important;
+}
+div[data-testid="stChatMessage"]:has(.user-msg-marker) div[data-testid="stChatMessageContent"] {
+    background: transparent !important;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    max-width: 80%;
+    margin-right: 8px;
+    padding: 0;
 }
 
-/* Style for the active/focused button */
-[data-testid="stSidebar"] button:focus {
-    background-color: rgba(255, 255, 255, 0.25);
-    outline: none;
+/* Dark pill — only on the text block (not on edit UI) */
+div[data-testid="stChatMessage"]:has(.user-msg-marker) div[data-testid="stMarkdownContainer"] p {
+    background-color: #2f2f2f;
+    color: #ececec;
+    border-radius: 18px;
+    padding: 12px 18px;
+    margin: 0;
+    display: inline-block;
+    text-align: left;
+    max-width: 100%;
+    line-height: 1.6;
 }
+
+/* Assistant messages — left aligned, no background */
+div[data-testid="stChatMessage"]:has(.assistant-msg-marker) {
+    display: flex !important;
+    flex-direction: row !important;
+    background: transparent;
+}
+div[data-testid="stChatMessage"]:has(.assistant-msg-marker) div[data-testid="stChatMessageContent"] {
+    background: transparent;
+    padding: 0 5px;
+    max-width: 85%;
+}
+
+/* ============================================================
+   INLINE EDIT MODE — textarea replaces bubble
+   ============================================================ */
+div[data-testid="stChatMessage"]:has(.user-msg-marker) textarea {
+    background-color: #2f2f2f !important;
+    color: #ececec !important;
+    border: 1px solid #555 !important;
+    border-radius: 18px !important;
+    padding: 14px 18px !important;
+    font-size: 15px !important;
+    line-height: 1.6 !important;
+    width: 100% !important;
+    resize: vertical;
+    min-height: 80px;
+}
+div[data-testid="stChatMessage"]:has(.user-msg-marker) textarea:focus {
+    border-color: #888 !important;
+    box-shadow: none !important;
+}
+/* Inner label for textarea — hide it */
+div[data-testid="stChatMessage"]:has(.user-msg-marker) label {
+    display: none !important;
+}
+/* Send / Cancel button row within user bubble */
+div[data-testid="stChatMessage"]:has(.user-msg-marker) [data-testid="stHorizontalBlock"] {
+    margin-top: 8px;
+    justify-content: flex-end;
+    gap: 8px;
+}
+div[data-testid="stChatMessage"]:has(.user-msg-marker) [data-testid="stHorizontalBlock"] button {
+    font-size: 13px !important;
+    padding: 5px 14px !important;
+    border-radius: 8px !important;
+    min-height: 32px !important;
+    height: 32px !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    background: transparent !important;
+    color: #ccc !important;
+}
+div[data-testid="stChatMessage"]:has(.user-msg-marker) [data-testid="stHorizontalBlock"] button[kind="primary"] {
+    background: #fff !important;
+    color: #111 !important;
+    border: none !important;
+    font-weight: 600;
+}
+div[data-testid="stChatMessage"]:has(.user-msg-marker) [data-testid="stHorizontalBlock"] button:hover {
+    background: rgba(255,255,255,0.1) !important;
+}
+
+/* ============================================================
+   TINY ACTION BUTTONS — Edit / Regenerate / Copy
+   ============================================================ */
+button[title="Edit message"],
+button[title="Regenerate"],
+button[title="Copy"] {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #777 !important;
+    padding: 2px !important;
+    min-height: auto !important;
+    height: 26px !important;
+    width: 26px !important;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+}
+div[data-testid="stChatMessage"]:hover button[title="Edit message"],
+div[data-testid="stChatMessage"]:hover button[title="Regenerate"],
+div[data-testid="stChatMessage"]:hover button[title="Copy"] {
+    opacity: 0.55;
+}
+button[title="Edit message"]:hover,
+button[title="Regenerate"]:hover,
+button[title="Copy"]:hover {
+    opacity: 1 !important;
+    color: #fff !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+

@@ -6,6 +6,7 @@ def get_db_connection():
     """Establishes a connection to the SQLite database."""
     conn = sqlite3.connect(DB_NAME, check_same_thread=False)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
 def _create_tables(conn):
@@ -19,6 +20,20 @@ def _create_tables(conn):
                 title TEXT NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        
+        # Create parsed_documents table to store extracted PDF contents and metadata
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS parsed_documents (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                kb_name TEXT NOT NULL,
+                file_name TEXT NOT NULL,
+                title TEXT,
+                sop_number TEXT,
+                content TEXT NOT NULL,
+                page_number INTEGER,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
         
@@ -52,6 +67,42 @@ def init_db():
     conn = get_db_connection()
     _create_tables(conn)
     conn.close()
+
+# --- PARSED DOCUMENTS ---
+
+def save_parsed_document(kb_name: str, file_name: str, content: str, title: str = None, sop_number: str = None, page_number: int = None):
+    """Saves a parsed document chunk to the database."""
+    conn = get_db_connection()
+    with conn:
+        conn.execute(
+            "INSERT INTO parsed_documents (kb_name, file_name, title, sop_number, content, page_number) VALUES (?, ?, ?, ?, ?, ?)",
+            (kb_name, file_name, title, sop_number, content, page_number)
+        )
+    conn.close()
+
+def get_parsed_documents(kb_name: str, file_name: str = None):
+    """Retrieves all parsed document chunks for a given KB and optional filename."""
+    conn = get_db_connection()
+    query = "SELECT * FROM parsed_documents WHERE kb_name = ?"
+    params = [kb_name]
+    if file_name:
+        query += " AND file_name = ?"
+        params.append(file_name)
+    docs = conn.execute(query, params).fetchall()
+    conn.close()
+    return docs
+
+def delete_parsed_documents(kb_name: str, file_name: str = None):
+    """Deletes parsed documents for a KB (and optionally a specific file)."""
+    conn = get_db_connection()
+    with conn:
+        if file_name:
+            conn.execute("DELETE FROM parsed_documents WHERE kb_name = ? AND file_name = ?", (kb_name, file_name))
+        else:
+            conn.execute("DELETE FROM parsed_documents WHERE kb_name = ?", (kb_name,))
+    conn.close()
+
+# --- CHAT THREADS ---
 
 def create_new_thread(title: str, kb_name: str) -> int:
     """Creates a new chat thread associated with a knowledge base and returns its ID."""
@@ -132,6 +183,9 @@ def delete_kb_threads(kb_name: str):
             conn.execute(
                 "DELETE FROM chat_threads WHERE kb_name = ?", (kb_name,)
             )
+        
+        # Also delete parsed documents when KB is deleted
+        conn.execute("DELETE FROM parsed_documents WHERE kb_name = ?", (kb_name,))
     conn.close()
 
 def delete_thread(thread_id: int):
@@ -139,4 +193,20 @@ def delete_thread(thread_id: int):
     conn = get_db_connection()
     with conn:
         conn.execute("DELETE FROM chat_threads WHERE id = ?", (thread_id,))
+    conn.close()
+
+def rename_thread(thread_id: int, new_title: str):
+    """Renames a specific chat thread."""
+    conn = get_db_connection()
+    with conn:
+        conn.execute("UPDATE chat_threads SET title = ? WHERE id = ?", (new_title, thread_id))
+    conn.close()
+
+def delete_messages_from(message_id: int):
+    """Deletes a message and all subsequent messages in the same thread."""
+    conn = get_db_connection()
+    with conn:
+        msg = conn.execute("SELECT thread_id, timestamp FROM chat_messages WHERE id = ?", (message_id,)).fetchone()
+        if msg:
+            conn.execute("DELETE FROM chat_messages WHERE thread_id = ? AND timestamp >= ?", (msg['thread_id'], msg['timestamp']))
     conn.close()
